@@ -47,13 +47,14 @@ def plot_current_measurement(loc, poles, distance):
     plt.title('Robot Surrounding Zoom In', loc='left')
 
 
-def plot(distance, poles, P_loc_i_posterior, robot, block=False, pause_time=1):
+def plot(distance, poles, P_loc_i_posterior, robot, block=False, pause_time=1, filename='0'):
     if robot.pole_detected(poles):
         block = False
     plot_poles(poles, distance)
     plot_belief(P_loc_i_posterior, distance)
     plot_current_measurement(robot.pos, poles, distance)
     plt.tight_layout(pad=0.5)
+    plt.savefig(filename)
     if block:
         plt.show()
     else:

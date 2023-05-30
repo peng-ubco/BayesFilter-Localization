@@ -1,6 +1,7 @@
 from plot import plot
 import numpy as np
-
+import imageio
+import os
 
 class Robot:
     def __init__(self, pos):
@@ -27,8 +28,10 @@ def shift_priors_with_uncertainty(P_loc_i):
     # Shift all probabilities to the right by one unit with the probability of 90%
     # Shift all probabilities to the right by two units with the probability of 10%
     for i in range(len(P_loc_i)-1, 1, -1):
-        P_loc_i[i] = P_loc_i[i-1] * 0.9 + P_loc_i[i-2] * 0.1
-    P_loc_i[1] = P_loc_i[0] * 0.9
+        P_loc_i[i] = P_loc_i[i] * 0.1+ \
+                     P_loc_i[i-1] * 0.9 \
+                     + P_loc_i[i-2] * 0.1
+    P_loc_i[1] = P_loc_i[1] * 0.1 + P_loc_i[0] * 0.8
     P_loc_i[0] = 0
 
 
@@ -84,7 +87,9 @@ P_not_D_given_loc_i = 1.0 - P_D_given_loc_i
 
 # Setup done, run the first calculation for the probabilities of robots location.
 update_loc_posteri()
-plot(distance, poles, P_loc_i_posteri, robot, pause_time=1)
+plot(distance, poles, P_loc_i_posteri, robot, pause_time=1, filename='animation_fig0.png')
+filenames=[]
+filenames.append('animation_fig0.png')
 
 # Begin Moving
 for j in range(20):
@@ -95,6 +100,18 @@ for j in range(20):
     P_loc_i_prior = P_loc_i_posteri
     # Perform Bayes Rule using new measurement about whether the robot sensor detected a pole.
     update_loc_posteri()
-    plot(distance, poles, P_loc_i_posteri, robot, pause_time=1)
+    filename = f'animation_fig{j+1}.png'
+    filenames.append(filename)
+    plot(distance, poles, P_loc_i_posteri, robot, pause_time=1, filename=filename)
 
-plot(distance, poles, P_loc_i_posteri, robot, pause_time=1)
+# plot(distance, poles, P_loc_i_posteri, robot, pause_time=1)
+
+# build gif
+with imageio.get_writer('mygif.gif', mode='I', duration=1) as writer:
+    for filename in filenames:
+        image = imageio.imread(filename)
+        writer.append_data(image)
+
+# Remove files
+for filename in set(filenames):
+    os.remove(filename)
